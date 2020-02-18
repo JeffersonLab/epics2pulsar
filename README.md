@@ -17,6 +17,8 @@ This application uses the Channel Access for Java (CAJ) library. It requires a w
 
 The list of PVs to monitor is read from the file _pvs.properties_.  The Java [Properties](https://en.wikipedia.org/wiki/.properties) file contains a single key named _PVS_CSV_, which is a comma separated values list of PV names.
 
+The Pulsar broker to use is configured via an environment variable named _PULSAR_URL_.
+
 ## Run
 Launch the gateway with:
 ````
