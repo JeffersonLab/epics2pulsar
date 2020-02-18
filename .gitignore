@@ -2,3 +2,5 @@
 /build/
 /.gradle/
 /out/
+/admin/build/
+/gateway/build/
