@@ -3,7 +3,6 @@ package org.jlab;
 import gov.aps.jca.CAException;
 import gov.aps.jca.TimeoutException;
 import org.apache.commons.cli.*;
-import org.apache.pulsar.client.api.PulsarClientException;
 
 import javax.management.JMX;
 import javax.management.MBeanServerConnection;
@@ -15,7 +14,7 @@ import javax.management.remote.JMXServiceURL;
 import java.io.IOException;
 import java.util.List;
 
-public class GatewayManager {
+public class AdminCli {
 
     public static void main(String[] args) throws IOException, MalformedObjectNameException, CAException, TimeoutException {
 
@@ -39,7 +38,7 @@ public class GatewayManager {
         try (JMXConnector jmxc = JMXConnectorFactory.connect(url, null)) {
             MBeanServerConnection mbsc = jmxc.getMBeanServerConnection();
             ObjectName mbeanName = new ObjectName("org.jlab:type=EpicsToPulsarGateway");
-            EpicsToPulsarGatewayMBean mbeanProxy = JMX.newMBeanProxy(mbsc, mbeanName, EpicsToPulsarGatewayMBean.class, true);
+            GatewayMBean mbeanProxy = JMX.newMBeanProxy(mbsc, mbeanName, GatewayMBean.class, true);
 
             System.out.println("Connected to Gateway");
 

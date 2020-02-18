@@ -22,7 +22,7 @@ import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.util.*;
 
-public class EpicsToPulsarGateway implements EpicsToPulsarGatewayMBean {
+public class Gateway implements GatewayMBean {
 
     private PulsarClient client = null;
     private CAJContext context = null;
@@ -140,7 +140,7 @@ public class EpicsToPulsarGateway implements EpicsToPulsarGatewayMBean {
     }
 
     public static void main(String[] args) throws IOException, MalformedObjectNameException, NotCompliantMBeanException, InstanceAlreadyExistsException, MBeanRegistrationException, CAException, TimeoutException {
-        EpicsToPulsarGateway gateway = new EpicsToPulsarGateway();
+        Gateway gateway = new Gateway();
 
         setupJMX(gateway);
 
@@ -151,7 +151,7 @@ public class EpicsToPulsarGateway implements EpicsToPulsarGatewayMBean {
         Properties props = new Properties();
 
         try (InputStream propStream
-                     = EpicsToPulsarGateway.class.getClassLoader().getResourceAsStream(
+                     = Gateway.class.getClassLoader().getResourceAsStream(
                 "pvs.properties")) {
             if (propStream == null) {
                 throw new IOException(
@@ -221,9 +221,9 @@ public class EpicsToPulsarGateway implements EpicsToPulsarGatewayMBean {
             return result;
     }
 
-    static void setupJMX(EpicsToPulsarGateway gateway) throws MalformedObjectNameException, NotCompliantMBeanException, InstanceAlreadyExistsException, MBeanRegistrationException {
+    static void setupJMX(Gateway gateway) throws MalformedObjectNameException, NotCompliantMBeanException, InstanceAlreadyExistsException, MBeanRegistrationException {
         // JMX management - for shutting the server down cleanly and other management tasks
-        EpicsToPulsarGatewayMBean manager = gateway;
+        GatewayMBean manager = gateway;
         MBeanServer mbserver = ManagementFactory.getPlatformMBeanServer();
         ObjectName name = new ObjectName("org.jlab:type=EpicsToPulsarGateway");
         mbserver.registerMBean(manager, name);

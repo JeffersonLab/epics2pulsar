@@ -6,7 +6,7 @@ import org.apache.pulsar.client.api.PulsarClientException;
 
 import java.util.List;
 
-public interface EpicsToPulsarGatewayMBean {
+public interface GatewayMBean {
     public void stop();
     public void add(String pv) throws PulsarClientException, CAException, TimeoutException;
     public void remove(String pv) throws PulsarClientException, CAException;
