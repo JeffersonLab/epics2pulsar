@@ -113,13 +113,10 @@ public class Gateway implements GatewayMBean {
                     .topic(pv)
                     .create();
 
-            producer.send("Starting to produce for pv: " + pv);
-
             monitor.addMonitorListener(new MonitorListener() {
                 @Override
                 public void monitorChanged(MonitorEvent ev) {
                     try {
-                        System.out.println("monitorChanged!");
                         producer.send(dbrToString(ev.getDBR()));
                     } catch(PulsarClientException e) {
                         System.err.println("Unable to send message");
