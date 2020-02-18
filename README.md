@@ -16,3 +16,21 @@ __Note:__ A firewall may prevent Gradle from downloading packages and dependenci
 This application uses the Channel Access for Java (CAJ) library. It requires a working EPICS channel access environment with the environment variable _EPICS_CA_ADDR_LIST_ set.
 
 The list of PVs to monitor is read from the file _pvs.properties_.  The Java [Properties](https://en.wikipedia.org/wiki/.properties) file contains a single key named _PVS_CSV_, which is a comma separated values list of PV names.
+
+## Run
+Launch the gateway with:
+````
+gradle :gateway:run
+````
+Launch the Admin Command Line Interface (CLI) to shutdown the gateway with:
+````
+gradle :admin:run --args="-s"
+````
+All CLI arguments / commands:
+
+| Command / Argument | Description |
+|---------|--------|
+| -s | Shutdown Gateway |
+| -l | List monitored PVs |
+| -a <pv> | Add PV |
+| -r <pv> | Remove PV | 
