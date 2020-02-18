@@ -26,9 +26,9 @@ Launch the Admin Command Line Interface (CLI) to shutdown the gateway with:
 ````
 gradle :admin:run --args="-s"
 ````
-All CLI arguments / commands:
+All CLI Commands:
 
-| Command / Argument | Description |
+| Command | Description |
 |---------|--------|
 | -s | Shutdown Gateway |
 | -l | List monitored PVs |
