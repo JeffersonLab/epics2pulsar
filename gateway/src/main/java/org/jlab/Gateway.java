@@ -21,8 +21,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Gateway implements GatewayMBean {
+
+    private static final Logger LOGGER = Logger.getLogger(Gateway.class.getName());
 
     private PulsarClient client = null;
     private CAJContext context = null;
@@ -30,25 +34,36 @@ public class Gateway implements GatewayMBean {
     private static final JCALibrary JCA_LIBRARY = JCALibrary.getInstance();
     private static final DefaultConfiguration CAJ_CONFIG = new DefaultConfiguration("config");
 
-    static final String PULSAR_URL = "pulsar://localhost:6650";
     Map<String, Topic> pvs = new HashMap<>();
 
     public void start() throws IOException, CAException, TimeoutException {
+        String pulsarUrl = System.getenv("PULSAR_URL");
+
+        if(pulsarUrl == null) {
+            throw new IOException("Environment variable PULSAR_URL not found");
+        }
+
+        String epicsAddrList = System.getenv("EPICS_CA_ADDR_LIST");
+
+        if(epicsAddrList == null) {
+            throw new IOException("Environment variable EPICS_CA_ADDR_LIST not found");
+        }
+
+        LOGGER.log(Level.INFO,"PULSAR_URL: " + pulsarUrl);
+        LOGGER.log(Level.INFO, "EPICS_CA_ADDR_LIST: " + epicsAddrList);
+
         try(PulsarClient client = PulsarClient.builder()
-                .serviceUrl(PULSAR_URL)
+                .serviceUrl(pulsarUrl)
                 .build()) {
 
             this.client = client;
 
             CAJ_CONFIG.setAttribute("class", JCALibrary.CHANNEL_ACCESS_JAVA);
             CAJ_CONFIG.setAttribute("auto_addr_list", "false");
-            CAJ_CONFIG.setAttribute("addr_list", "129.57.255.4 129.57.255.6 129.57.255.10 127.0.0.1");
-            //CAJ_CONFIG.setAttribute("addr_list", "129.57.255.21");
+            CAJ_CONFIG.setAttribute("addr_list", epicsAddrList);
 
             try {
                 context = (CAJContext) JCA_LIBRARY.createContext(CAJ_CONFIG);
-
-                //context.initialize();
 
                 loadPvsConfig();
 

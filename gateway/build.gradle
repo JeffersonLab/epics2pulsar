@@ -23,7 +23,7 @@ dependencies {
 }
 
 application {
-    mainClassName = 'org.jlab.EpicsToPulsarGateway'
+    mainClassName = 'org.jlab.Gateway'
     applicationDefaultJvmArgs = ['-Dcom.sun.management.jmxremote',
                                  '-Dcom.sun.management.jmxremote.port=9999',
                                  '-Dcom.sun.management.jmxremote.authenticate=false',
