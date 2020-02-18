@@ -1,4 +1,5 @@
 rootProject.name = 'epics2pulsar'
 include 'admin'
 include 'gateway'
+include 'subscriber'
 
