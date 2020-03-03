@@ -50,3 +50,4 @@ __Note:__ If you deploy this project's distributable package to a server without
 ## See Also
    - [EPICS to Kafka (ESS)](https://github.com/ess-dmsc/forward-epics-to-kafka)
    - [Control System Studio Phoebus Alarms over Kafka](https://github.com/ControlSystemStudio/phoebus/tree/master/app/alarm)
+   - [Kafka at CERN](http://icalepcs2019.vrws.de/papers/mompl010.pdf)
