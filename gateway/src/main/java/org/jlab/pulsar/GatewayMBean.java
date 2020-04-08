@@ -1,4 +1,4 @@
-package org.jlab;
+package org.jlab.pulsar;
 
 import gov.aps.jca.CAException;
 import gov.aps.jca.TimeoutException;

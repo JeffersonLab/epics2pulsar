@@ -1,4 +1,4 @@
-package org.jlab;
+package org.jlab.pulsar;
 
 import com.cosylab.epics.caj.CAJChannel;
 import com.cosylab.epics.caj.CAJContext;
