@@ -1,5 +1,7 @@
 # epics2pulsar
-Gateway to pump [EPICS](https://epics-controls.org) PVs into a [Pulsar](https://pulsar.apache.org) Message Broker
+Gateway to pump [EPICS](https://epics-controls.org) PVs into a [Pulsar](https://pulsar.apache.org) Message Broker.
+
+There are multiple APIs provided by pulsar for producing and consuming messages and this project contains multiple modules to compare and contrast the options.   The standard Pulsar producer API is used by the gateway module, and the Pulsar IO Connector API is used in the connector module.
 
 ## Build
 This project uses the [Gradle](https://gradle.org) build tool to automatically download dependencies and build the project from source:
