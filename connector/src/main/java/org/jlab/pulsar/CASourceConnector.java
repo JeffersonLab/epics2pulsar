@@ -247,7 +247,7 @@ public class CASourceConnector extends PushSource<String> {
         }
 
         @Override
-        public Optional<String> getTopicName() {
+        public Optional<String> getDestinationTopic() {
             return Optional.of(topic);
         }
     }
