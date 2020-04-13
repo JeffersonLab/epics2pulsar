@@ -3,6 +3,8 @@ package org.jlab.pulsar;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
+import lombok.Data;
+import lombok.experimental.Accessors;
 import org.apache.pulsar.io.core.SourceContext;
 import org.apache.pulsar.io.core.annotations.FieldDoc;
 
@@ -11,6 +13,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 
+@Data
+@Accessors(chain = true)
 public class CASourceConfig implements Serializable {
     private static final long serialVersionUID = 1L;
 
