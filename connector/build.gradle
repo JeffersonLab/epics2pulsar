@@ -1,7 +1,21 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven {
+            url 'http://dl.bintray.com/sponiro/gradle-plugins'
+        }
+    }
+    dependencies {
+        classpath group: 'de.fanero.gradle.plugin.nar', name: 'gradle-nar-plugin', version: '0.4'
+    }
+}
+
 plugins {
     id 'java'
     id "io.freefair.lombok" version "5.0.0-rc6"
 }
+
+apply plugin: 'de.fanero.gradle.plugin.nar'
 
 group 'org.jlab'
 version '0.0.0'
