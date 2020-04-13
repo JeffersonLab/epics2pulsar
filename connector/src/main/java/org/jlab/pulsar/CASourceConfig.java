@@ -82,26 +82,6 @@ public class CASourceConfig implements Serializable {
         return instanceConf;
     }
 
-    /**
-     * Create a single String space separated list.
-     *
-     * @param array The array of Strings
-     * @return A single String
-     */
-    private String toList(String[] array) {
-        java.lang.String list = "";
-
-        if(array.length > 0) {
-            list = array[0];
-        }
-
-        for(int i = 1; i < array.length; i++) {
-            list = list + "," + array[i];
-        }
-
-        return list;
-    }
-
     private void appendSubsetList(List<CASourceInstanceConfig> configs, List<String> all, int fromIndex, int toIndex) {
         List<String> subset = all.subList(fromIndex, toIndex);
 

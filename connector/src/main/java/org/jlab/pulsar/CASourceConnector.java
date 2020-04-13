@@ -1,6 +1,16 @@
 package org.jlab.pulsar;
 
+import com.cosylab.epics.caj.CAJChannel;
+import com.cosylab.epics.caj.CAJContext;
+import com.cosylab.epics.caj.CAJMonitor;
+import gov.aps.jca.CAException;
+import gov.aps.jca.JCALibrary;
+import gov.aps.jca.Monitor;
+import gov.aps.jca.TimeoutException;
+import gov.aps.jca.configuration.DefaultConfiguration;
 import gov.aps.jca.dbr.DBR;
+import gov.aps.jca.event.MonitorEvent;
+import gov.aps.jca.event.MonitorListener;
 import org.apache.pulsar.functions.api.Record;
 import org.apache.pulsar.io.core.PushSource;
 import org.apache.pulsar.io.core.SourceContext;
@@ -8,18 +18,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class CASourceConnector extends PushSource<String> {
     private static final Logger LOG = LoggerFactory.getLogger(CASourceConnector.class);
+
+    private static final Logger log = LoggerFactory.getLogger(CASourceConnector.class);
+    private static final JCALibrary JCA_LIBRARY = JCALibrary.getInstance();
+    private DefaultConfiguration jcaConfig = new DefaultConfiguration("config");
 
     private Map<String, DBR> latest = new ConcurrentHashMap<>();
     private CASourceConfig globalConfig = null;
     private CASourceInstanceConfig instanceConfig = null;
     private volatile boolean running = false;
     private Thread runnerThread;
+    private CAJContext context;
 
     /**
      * Open connector with configuration.
@@ -33,6 +47,10 @@ public class CASourceConnector extends PushSource<String> {
         globalConfig = CASourceConfig.load(config, sourceContext);
         instanceConfig =  globalConfig.getInstanceConfig(config, sourceContext);
 
+        if(context == null) {
+            createContext();
+        }
+
         this.start();
         running = true;
     }
@@ -42,10 +60,23 @@ public class CASourceConnector extends PushSource<String> {
             LOG.info("Starting CA source");
 
             while (running) {
+
+                synchronized (runnerThread) {
+                    try {
+                        runnerThread.wait(100); // Max update frequency of 10Hz
+                    } catch(InterruptedException e) {
+                        // Do nothing other than continue loop and re-check running boolean
+                    }
+                }
+
                 Set<String> updatedPvs = latest.keySet();
 
                 for (String pv: updatedPvs) {
-                    CARecord<String> record = new CARecord<>();
+                    DBR dbr = latest.remove(pv);
+                    String value = dbrToString(dbr);
+                    String topic = pv.replaceAll(":", "-"); // Does pulsar restrict colon in topic name?
+
+                    CARecord record = new CARecord(value, topic);
                     consume(record);
                 }
             }
@@ -102,10 +133,108 @@ public class CASourceConnector extends PushSource<String> {
      */
     @Override
     public void close() throws Exception {
-
+        if(context != null) {
+            try {
+                context.destroy();
+            } catch(CAException e) {
+                log.error("Failed to destroy CAJContext", e);
+            }
+        }
+        running = false;
+        synchronized (runnerThread) {
+            runnerThread.notify();
+        }
     }
 
-    private static class CARecord<String> implements Record<String> {
+    private void createContext() {
+
+        jcaConfig.setAttribute("class", JCALibrary.CHANNEL_ACCESS_JAVA);
+        jcaConfig.setAttribute("auto_addr_list", "false");
+        jcaConfig.setAttribute("addr_list", instanceConfig.getAddrs());
+
+        try {
+            context = (CAJContext) JCA_LIBRARY.createContext(jcaConfig);
+
+            List<CAJChannel> channels = new ArrayList<>();
+            for(String pv: instanceConfig.getPvs()) {
+                channels.add((CAJChannel)context.createChannel(pv));
+            }
+
+            context.pendIO(2.0);
+
+            for(CAJChannel channel: channels) {
+                CAJMonitor monitor = (CAJMonitor) channel.addMonitor(Monitor.VALUE);
+
+                monitor.addMonitorListener(new MonitorListener() {
+                    @Override
+                    public void monitorChanged(MonitorEvent ev) {
+                        latest.put(channel.getName(), ev.getDBR());
+                    }
+                });
+            }
+
+            context.pendIO(2.0);
+
+        } catch(CAException | TimeoutException e) {
+            log.error("Error while trying to create CAJContext");
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String dbrToString(DBR dbr) {
+        String result = null;
+        try {
+            if (dbr.isDOUBLE()) {
+                double value = ((gov.aps.jca.dbr.DOUBLE) dbr).getDoubleValue()[0];
+                if (Double.isFinite(value)) {
+                    result = String.valueOf(value);
+                } else if (Double.isNaN(value)) {
+                    result = "NaN";
+                } else {
+                    result = "Infinity";
+                }
+            } else if (dbr.isFLOAT()) {
+                float value = ((gov.aps.jca.dbr.FLOAT) dbr).getFloatValue()[0];
+                if (Float.isFinite(value)) {
+                    result = String.valueOf(value);
+                } else if (Float.isNaN(value)) {
+                    result = "NaN";
+                } else {
+                    result = "Infinity";
+                }
+            } else if (dbr.isINT()) {
+                int value = ((gov.aps.jca.dbr.INT) dbr).getIntValue()[0];
+                result = String.valueOf(value);
+            } else if (dbr.isSHORT()) {
+                short value = ((gov.aps.jca.dbr.SHORT) dbr).getShortValue()[0];
+                result = String.valueOf(value);
+            } else if (dbr.isENUM()) {
+                short value = ((gov.aps.jca.dbr.ENUM) dbr).getEnumValue()[0];
+                result = String.valueOf(value);
+            } else if (dbr.isBYTE()) {
+                byte value = ((gov.aps.jca.dbr.BYTE) dbr).getByteValue()[0];
+                result = String.valueOf(value);
+            } else {
+                String value = ((gov.aps.jca.dbr.STRING) dbr).getStringValue()[0];
+                result = String.valueOf(value);
+            }
+        } catch (Exception e) {
+            System.err.println("Unable to create String from value: " + e);
+            dbr.printInfo();
+        }
+
+        return result;
+    }
+
+    private static class CARecord implements Record<String> {
+
+        private String topic;
+        private String value;
+
+        public CARecord(String value, String topic) {
+            this.value = value;
+            this.topic = topic;
+        }
 
         /**
          * Retrieves the actual data of the record.
@@ -114,7 +243,12 @@ public class CASourceConnector extends PushSource<String> {
          */
         @Override
         public String getValue() {
-            return null;
+            return value;
+        }
+
+        @Override
+        public Optional<String> getTopicName() {
+            return Optional.of(topic);
         }
     }
 }
