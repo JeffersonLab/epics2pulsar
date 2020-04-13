@@ -44,4 +44,8 @@ jar {
 
 nar {
     archiveName 'ca-source.nar'
+
+    from("./src/main/resources") {
+        include("META-INF/services/pulsar-io.yaml")
+    }
 }
