@@ -8,15 +8,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class CASourceConnector<String> extends PushSource<String> {
     private static final Logger LOG = LoggerFactory.getLogger(CASourceConnector.class);
 
     private Map<String, DBR> latest = new ConcurrentHashMap<>();
-
+    private CASourceConfig instanceConfig = null;
     private volatile boolean running = false;
     private Thread runnerThread;
 
@@ -29,6 +28,8 @@ public class CASourceConnector<String> extends PushSource<String> {
      */
     @Override
     public void open(Map<java.lang.String, Object> config, SourceContext sourceContext) throws Exception {
+        instanceConfig = CASourceConfig.load(config, sourceContext);
+
         this.start();
         running = true;
     }

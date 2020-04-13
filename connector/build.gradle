@@ -14,6 +14,8 @@ repositories {
 }
 
 dependencies {
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.10.3'
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.10.3'
     implementation 'org.epics:jca:2.3.6'
     implementation 'org.epics:caj:1.1.15'
     implementation group: 'org.apache.pulsar', name: 'pulsar-io-core', version: pulsarVersion
