@@ -33,6 +33,7 @@ public class CASourceConnector extends PushSource<String> {
     private volatile boolean running = false;
     private Thread runnerThread;
     private CAJContext context;
+    private SourceContext sourceContext;
 
     /**
      * Open connector with configuration.
@@ -43,6 +44,8 @@ public class CASourceConnector extends PushSource<String> {
      */
     @Override
     public void open(Map<String, Object> config, SourceContext sourceContext) throws Exception {
+        this.sourceContext = sourceContext;
+
         globalConfig = CASourceConfig.load(config, sourceContext);
         instanceConfig =  globalConfig.getInstanceConfig(config, sourceContext);
 
@@ -58,8 +61,14 @@ public class CASourceConnector extends PushSource<String> {
         runnerThread = new Thread(() -> {
             LOG.warn("Starting CA source");
 
-            LOG.warn("addrs: " + globalConfig.getAddrs());
-            LOG.warn("pvs: " + globalConfig.getPvs());
+            LOG.warn("num instances: " + sourceContext.getNumInstances());
+            LOG.warn("instance ID: " + sourceContext.getInstanceId());
+
+            LOG.warn("global addrs: " + globalConfig.getAddrs());
+            LOG.warn("global pvs: " + globalConfig.getPvs());
+
+            LOG.warn("instance addrs: " + instanceConfig.getAddrs());
+            LOG.warn("instance pvs: " + instanceConfig.getPvs());
 
             while (running) {
 

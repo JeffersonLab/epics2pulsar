@@ -52,8 +52,8 @@ public class CASourceConfig implements Serializable {
         int remainder = 0;
 
         if(pvsSet.size() > maxTasks) {
-            pvsPerTask = pvsPerTask / maxTasks;
-            remainder = pvsPerTask % maxTasks;
+            pvsPerTask = pvsSet.size() / maxTasks;
+            remainder = pvsSet.size() % maxTasks;
         } else if(pvsSet.size() < maxTasks) {
             //maxTasks = pvs.size(); // Reduce number of tasks as not enough work to go around!
 
