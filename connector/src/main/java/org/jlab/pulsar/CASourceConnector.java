@@ -24,7 +24,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class CASourceConnector extends PushSource<String> {
     private static final Logger LOG = LoggerFactory.getLogger(CASourceConnector.class);
 
-    private static final Logger log = LoggerFactory.getLogger(CASourceConnector.class);
     private static final JCALibrary JCA_LIBRARY = JCALibrary.getInstance();
     private DefaultConfiguration jcaConfig = new DefaultConfiguration("config");
 
@@ -57,7 +56,10 @@ public class CASourceConnector extends PushSource<String> {
 
     public void start() {
         runnerThread = new Thread(() -> {
-            LOG.info("Starting CA source");
+            LOG.warn("Starting CA source");
+
+            LOG.warn("addrs: " + globalConfig.getAddrs());
+            LOG.warn("pvs: " + globalConfig.getPvs());
 
             while (running) {
 
@@ -74,7 +76,8 @@ public class CASourceConnector extends PushSource<String> {
                 for (String pv: updatedPvs) {
                     DBR dbr = latest.remove(pv);
                     String value = dbrToString(dbr);
-                    String topic = pv.replaceAll(":", "-"); // Does pulsar restrict colon in topic name?
+                    String topic = pv;
+                    //String topic = pv.replaceAll(":", "-"); // Does pulsar restrict colon in topic name?
 
                     CARecord record = new CARecord(value, topic);
                     consume(record);
@@ -137,7 +140,7 @@ public class CASourceConnector extends PushSource<String> {
             try {
                 context.destroy();
             } catch(CAException e) {
-                log.error("Failed to destroy CAJContext", e);
+                LOG.error("Failed to destroy CAJContext", e);
             }
         }
         running = false;
@@ -176,7 +179,7 @@ public class CASourceConnector extends PushSource<String> {
             context.pendIO(2.0);
 
         } catch(CAException | TimeoutException e) {
-            log.error("Error while trying to create CAJContext");
+            LOG.error("Error while trying to create CAJContext");
             throw new RuntimeException(e);
         }
     }
